@@ -114,7 +114,7 @@ describe('hapi-mock', async () => {
     await server.stop();
   });
 
-  it('should mock routes', async () => {
+  it('should mock routes / condition by params', async () => {
     const res = await server.inject({
       method: 'GET',
       url: '/test2/4711',
@@ -123,6 +123,31 @@ describe('hapi-mock', async () => {
       },
     });
     expect(res.statusCode).to.be.equal(418);
+    expect(listener.handlers.called).to.equal(false);
+  });
+
+  it('should mock routes / condition by headers', async () => {
+    const res = await server.inject({
+      method: 'GET',
+      url: '/test2/4712',
+      headers: {
+        'x-hapi-mock': true,
+        'x-mock-case': 13,
+      },
+    });
+    expect(res.payload).to.be.equal('case 13');
+    expect(listener.handlers.called).to.equal(false);
+  });
+
+  it('should mock routes / no mock found', async () => {
+    const res = await server.inject({
+      method: 'GET',
+      url: '/test2/4712',
+      headers: {
+        'x-hapi-mock': true,
+      },
+    });
+    expect(res.statusCode).to.be.equal(400);
     expect(listener.handlers.called).to.equal(false);
   });
 });

@@ -50,7 +50,7 @@ Your route configuration may look like this:
 ```js
 server.route({
   method: 'GET',
-  path: '/example',
+  path: '/example/{id}',
   options: {
     plugins: {
       'hapi-mock': { // activate mocking for this endpoint
@@ -65,10 +65,13 @@ server.route({
 ```
 
 The `file` option refers to a JS module (e.g., `cases.js`) containing your mock cases, e.g.,
-```
+```js
 module.exports = [{
-  condition: "params.id == '4711'",
+  condition: 'params.id == "4711"',
   code: 418,
+}, {
+  condition: 'headers["x-mock-case"] == 13',
+  body: 'case 13',
 }];
 ```
 

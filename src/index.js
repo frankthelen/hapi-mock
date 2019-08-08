@@ -1,6 +1,6 @@
 const Boom = require('@hapi/boom');
 const Path = require('path');
-const { compile } = require('@networkteam/eel');
+const jexl = require('jexl');
 const { name } = require('../package.json');
 
 const register = (server, {
@@ -13,10 +13,10 @@ const register = (server, {
     } = request;
     const { method, path } = route;
     const mockIt = headers[headerName];
-    const routeOptions = route.settings.plugins[name];
     if (!mockIt) { // do not mock
       return h.continue;
     }
+    const routeOptions = route.settings.plugins[name];
     if (!routeOptions) { // no mocks available
       return Boom.badRequest('no mocks for this route');
     }
@@ -24,9 +24,16 @@ const register = (server, {
       const { file = './cases' } = routeOptions;
       const location = Path.join(baseDir, file);
       const cases = require(location); // eslint-disable-line global-require, import/no-dynamic-require, max-len
-      const mock = cases.find(({ condition }) => compile(condition)({
+      const context = {
         headers, params, query, payload, method, path,
-      }));
+      };
+      const mock = cases.find(({ condition }, idx) => {
+        try {
+          return jexl.evalSync(condition, context);
+        } catch (error) {
+          throw new Error(`error in condition [${idx}]: ${error.message}`);
+        }
+      });
       if (!mock) {
         return Boom.badRequest('no matching mock found');
       }

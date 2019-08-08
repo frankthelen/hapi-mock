@@ -50,6 +50,6 @@
   },
   "dependencies": {
     "@hapi/boom": "^7.4.2",
-    "@networkteam/eel": "^1.4.1"
+    "jexl": "^2.1.1"
   }
 }
