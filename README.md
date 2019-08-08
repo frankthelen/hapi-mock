@@ -81,11 +81,14 @@ module.exports = [{
   code: 200, // this is the default
   type: 'text/plain', // this is the default
   body: 'case 13',
+  headers: {
+    'x-mock-foo': 'bar',
+  },
 }];
 ```
 
-`condition` may refer to HAPI's route parameters `headers`, `params`, `query`, `payload`, `method` (lowercase), and `path`.
-The result parameters of a mock case can be `code`, `type`, and `body`.
+`condition` is an expression that may refer to HAPI's route parameters `headers`, `params`, `query`, `payload`, `method` (lowercase), and `path`. The usual operators are supported (`==`, `&&`, `||`, etc.).
+Response parameters of a mock can be `code` (default `200`), `type` (default `text/plain`), `body` (default `mocked!`), and `headers` (default `{}`).
 
 And finally, you need to set the HTTP header `x-hapi-mock: true` to a request to have a route use mocking rather than its real handler implementation.
 

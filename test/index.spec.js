@@ -175,7 +175,7 @@ describe('hapi-mock', async () => {
     expect(listener.handlers.called).to.equal(false);
   });
 
-  it('should not mock routes / pass on to handler', async () => {
+  it('should not mock routes / pass on to real handler', async () => {
     const res = await server.inject({
       method: 'GET',
       url: '/test2/4711',
@@ -193,10 +193,12 @@ describe('hapi-mock', async () => {
       },
     });
     expect(res.statusCode).to.be.equal(418);
+    expect(res.headers['content-type']).to.be.equal('text/plain; charset=utf-8');
+    expect(res.payload).to.be.equal('mocked!');
     expect(listener.handlers.called).to.equal(false);
   });
 
-  it('should mock routes / find case by headers', async () => {
+  it('should mock routes / find case by headers / set header', async () => {
     const res = await server.inject({
       method: 'GET',
       url: '/test2/4712',
@@ -205,7 +207,10 @@ describe('hapi-mock', async () => {
         'x-mock-case': 13,
       },
     });
+    expect(res.statusCode).to.be.equal(200);
+    expect(res.headers['content-type']).to.be.equal('text/plain; charset=utf-8');
     expect(res.payload).to.be.equal('case 13');
+    expect(res.headers['x-mock-foo']).to.be.equal('bar');
     expect(listener.handlers.called).to.equal(false);
   });
 
@@ -218,6 +223,7 @@ describe('hapi-mock', async () => {
       },
     });
     expect(res.statusCode).to.be.equal(200);
+    expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
     expect(JSON.parse(res.payload)).to.be.deep.equal({ bar: true });
     expect(listener.handlers.called).to.equal(false);
   });

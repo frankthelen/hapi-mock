@@ -40,14 +40,18 @@ const register = (server, {
       const {
         code = 200,
         type = 'text/plain',
-        body = 'mocked',
+        body = 'mocked!',
+        headers: headersRes = {},
       } = mock;
-      return h
-        .response(body)
-        .type(type)
-        .code(code)
-        .header(headerName, true)
-        .takeover();
+      const response = h.response(body);
+      response.type(type);
+      response.code(code);
+      response.header(headerName, true);
+      Object.entries(headersRes).forEach(([key, value]) => {
+        response.header(key, value);
+      });
+      response.takeover();
+      return response;
     } catch (error) {
       server.log(['error'], error);
       return Boom.badImplementation(error.message);
