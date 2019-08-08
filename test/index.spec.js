@@ -68,14 +68,26 @@ const setup = async () => {
     method: 'GET',
     path: '/test2/{id}',
     options: {
-      auth: {
-        access: {
-          scope: ['read'],
-        },
-      },
+      auth: false,
       plugins: {
         'hapi-mock': {
           file: './cases',
+        },
+      },
+    },
+    handler: () => {
+      listener.handlers();
+      return 'ok';
+    },
+  };
+  const route3 = {
+    method: 'GET',
+    path: '/test3/{id}',
+    options: {
+      auth: false,
+      plugins: {
+        'hapi-mock': {
+          file: './faulty',
         },
       },
     },
@@ -93,7 +105,7 @@ const setup = async () => {
   await server.register([hapiAuthBasic, mock]);
   server.auth.strategy('simple', 'basic', { validate });
   server.auth.default('simple');
-  await server.route([route1, route2]);
+  await server.route([route1, route2, route3]);
   await server.start();
   return server;
 };
@@ -114,7 +126,29 @@ describe('hapi-mock', async () => {
     await server.stop();
   });
 
-  it('should mock routes / condition by params', async () => {
+  it('should not mock routes / no mocks for this route', async () => {
+    const res = await server.inject({
+      method: 'GET',
+      url: '/test1/4711',
+      headers: {
+        'x-hapi-mock': true,
+      },
+    });
+    expect(res.statusCode).to.be.equal(400);
+    expect(JSON.parse(res.payload).message).to.be.equal('no mocks for this route');
+    expect(listener.handlers.called).to.equal(false);
+  });
+
+  it('should not mock routes / pass on to handler', async () => {
+    const res = await server.inject({
+      method: 'GET',
+      url: '/test2/4711',
+    });
+    expect(res.statusCode).to.be.equal(200);
+    expect(listener.handlers.calledOnce).to.equal(true);
+  });
+
+  it('should mock routes / find condition by params', async () => {
     const res = await server.inject({
       method: 'GET',
       url: '/test2/4711',
@@ -126,7 +160,7 @@ describe('hapi-mock', async () => {
     expect(listener.handlers.called).to.equal(false);
   });
 
-  it('should mock routes / condition by headers', async () => {
+  it('should mock routes / find condition by headers', async () => {
     const res = await server.inject({
       method: 'GET',
       url: '/test2/4712',
@@ -148,6 +182,20 @@ describe('hapi-mock', async () => {
       },
     });
     expect(res.statusCode).to.be.equal(400);
+    expect(JSON.parse(res.payload).message).to.be.equal('no matching mock found');
     expect(listener.handlers.called).to.equal(false);
+  });
+
+  it('should detect and log faulty condition', async () => {
+    const res = await server.inject({
+      method: 'GET',
+      url: '/test3/4711',
+      headers: {
+        'x-hapi-mock': true,
+      },
+    });
+    expect(res.statusCode).to.be.equal(500);
+    expect(listener.handlers.called).to.equal(false);
+    expect(listener.errors.calledOnce).to.be.equals(true);
   });
 });
