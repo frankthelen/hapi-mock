@@ -52,13 +52,14 @@ server.route({
   method: 'GET',
   path: '/example/{id}',
   options: {
+    // ...
     plugins: {
       'hapi-mock': { // activate mocking for this endpoint
         file: './cases', // JS module relative to `baseDir`
       },
     },
   },
-  handler: function (request, h) {
+  handler: async (request, h) => {
     // ...
   }
 });
@@ -70,15 +71,23 @@ module.exports = [{
   condition: 'params.id == "4711"',
   code: 418,
 }, {
+  condition: 'query.id == "foo"',
+  type: 'application/json',
+  body: {
+    bar: true,
+  },
+}, {
   condition: 'headers["x-mock-case"] == 13',
+  code: 200, // this is the default
+  type: 'text/plain', // this is the default
   body: 'case 13',
 }];
 ```
 
-`condition` may refer to HAPI's route parameters `headers`, `params`, `query`, `payload`, `method`, and `path`.
+`condition` may refer to HAPI's route parameters `headers`, `params`, `query`, `payload`, `method` (lowercase), and `path`.
 The result parameters of a mock case can be `code`, `type`, and `body`.
 
 And finally, you need to set the HTTP header `x-hapi-mock: true` to a request to have a route use mocking rather than its real handler implementation.
 
 You don't want to use this plug-in in production, of course.
-Experimental. Have fun.
+Have fun.

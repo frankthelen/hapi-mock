@@ -1,5 +1,6 @@
 const Path = require('path');
 const Hapi = require('@hapi/hapi');
+const Joi = require('@hapi/joi');
 const hapiAuthBasic = require('@hapi/basic');
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
@@ -58,6 +59,11 @@ const setup = async () => {
     path: '/test1/{id}',
     options: {
       auth: false,
+      validate: {
+        params: {
+          id: Joi.string().required(),
+        },
+      },
     },
     handler: () => {
       listener.handlers();
@@ -69,6 +75,11 @@ const setup = async () => {
     path: '/test2/{id}',
     options: {
       auth: false,
+      validate: {
+        params: {
+          id: Joi.string().required(),
+        },
+      },
       plugins: {
         'hapi-mock': {
           file: './cases',
@@ -85,9 +96,34 @@ const setup = async () => {
     path: '/test3/{id}',
     options: {
       auth: false,
+      validate: {
+        params: {
+          id: Joi.string().required(),
+        },
+      },
       plugins: {
         'hapi-mock': {
           file: './faulty',
+        },
+      },
+    },
+    handler: () => {
+      listener.handlers();
+      return 'ok';
+    },
+  };
+  const route4 = {
+    method: 'GET',
+    path: '/test4',
+    options: {
+      auth: false,
+      validate: {
+        query: {
+          id: Joi.string().required(),
+        },
+      },
+      plugins: {
+        'hapi-mock': {
         },
       },
     },
@@ -105,7 +141,7 @@ const setup = async () => {
   await server.register([hapiAuthBasic, mock]);
   server.auth.strategy('simple', 'basic', { validate });
   server.auth.default('simple');
-  await server.route([route1, route2, route3]);
+  await server.route([route1, route2, route3, route4]);
   await server.start();
   return server;
 };
@@ -148,7 +184,7 @@ describe('hapi-mock', async () => {
     expect(listener.handlers.calledOnce).to.equal(true);
   });
 
-  it('should mock routes / find condition by params', async () => {
+  it('should mock routes / find case by params', async () => {
     const res = await server.inject({
       method: 'GET',
       url: '/test2/4711',
@@ -160,7 +196,7 @@ describe('hapi-mock', async () => {
     expect(listener.handlers.called).to.equal(false);
   });
 
-  it('should mock routes / find condition by headers', async () => {
+  it('should mock routes / find case by headers', async () => {
     const res = await server.inject({
       method: 'GET',
       url: '/test2/4712',
@@ -170,6 +206,19 @@ describe('hapi-mock', async () => {
       },
     });
     expect(res.payload).to.be.equal('case 13');
+    expect(listener.handlers.called).to.equal(false);
+  });
+
+  it('should mock routes / find case by query / json response', async () => {
+    const res = await server.inject({
+      method: 'GET',
+      url: '/test4?id=foo',
+      headers: {
+        'x-hapi-mock': true,
+      },
+    });
+    expect(res.statusCode).to.be.equal(200);
+    expect(JSON.parse(res.payload)).to.be.deep.equal({ bar: true });
     expect(listener.handlers.called).to.equal(false);
   });
 
