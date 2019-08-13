@@ -6,6 +6,7 @@ const { name } = require('../package.json');
 const register = (server, {
   headerName = 'x-hapi-mock',
   baseDir = './mocks',
+  validate = false,
 }) => {
   server.ext('onPreAuth', async (request, h) => {
     const {
@@ -15,6 +16,12 @@ const register = (server, {
     const mockIt = headers[headerName];
     if (!mockIt) { // do not mock
       return h.continue;
+    }
+    if (validate) {
+      const auth = await validate(request);
+      if (!auth || !auth.isValid) {
+        return Boom.unauthorized('mocks not authorized');
+      }
     }
     const routeOptions = route.settings.plugins[name];
     if (!routeOptions) { // no mocks available

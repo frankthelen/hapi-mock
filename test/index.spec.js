@@ -47,7 +47,7 @@ const listener = {
   handlers: () => {},
 };
 
-const setup = async () => {
+const setup = async (pluginOptions = {}) => {
   const server = new Hapi.Server({
     port: 9004,
     // debug: {
@@ -136,6 +136,7 @@ const setup = async () => {
     plugin: hapiMock,
     options: {
       baseDir: Path.join(__dirname, 'mocks'),
+      ...pluginOptions,
     },
   };
   await server.register([hapiAuthBasic, mock]);
@@ -146,7 +147,7 @@ const setup = async () => {
   return server;
 };
 
-describe('hapi-mock', async () => {
+describe('hapi-mock / without auth', async () => {
   let server;
 
   beforeEach(async () => {
@@ -252,5 +253,76 @@ describe('hapi-mock', async () => {
     expect(res.statusCode).to.be.equal(500);
     expect(listener.handlers.called).to.equal(false);
     expect(listener.errors.calledOnce).to.be.equals(true);
+  });
+});
+
+describe('hapi-mock / with auth / false', async () => {
+  let server;
+  const pluginOptions = {
+    validate: async () => ({ isValid: false }),
+  };
+
+  beforeEach(async () => {
+    sinon.spy(listener, 'errors');
+    sinon.spy(listener, 'handlers');
+    sinon.spy(pluginOptions, 'validate');
+    server = await setup(pluginOptions);
+    server.events.on({ name: 'request', filter: { tags: ['error'] } }, listener.errors);
+  });
+
+  afterEach(async () => {
+    listener.errors.restore();
+    listener.handlers.restore();
+    pluginOptions.validate.restore();
+    await server.stop();
+  });
+
+  it('should protect mocking / false', async () => {
+    const res = await server.inject({
+      method: 'GET',
+      url: '/test2/4711',
+      headers: {
+        'x-hapi-mock': true,
+      },
+    });
+    expect(res.statusCode).to.be.equal(401);
+    expect(JSON.parse(res.payload).message).to.be.equal('mocks not authorized');
+    expect(listener.handlers.calledOnce).to.equal(false);
+    expect(pluginOptions.validate.calledOnce).to.equal(true);
+  });
+});
+
+describe('hapi-mock / with auth / true', async () => {
+  let server;
+  const pluginOptions = {
+    validate: async () => ({ isValid: true }),
+  };
+
+  beforeEach(async () => {
+    sinon.spy(listener, 'errors');
+    sinon.spy(listener, 'handlers');
+    sinon.spy(pluginOptions, 'validate');
+    server = await setup(pluginOptions);
+    server.events.on({ name: 'request', filter: { tags: ['error'] } }, listener.errors);
+  });
+
+  afterEach(async () => {
+    listener.errors.restore();
+    listener.handlers.restore();
+    pluginOptions.validate.restore();
+    await server.stop();
+  });
+
+  it('should protect mocking / true', async () => {
+    const res = await server.inject({
+      method: 'GET',
+      url: '/test2/4711',
+      headers: {
+        'x-hapi-mock': true,
+      },
+    });
+    expect(res.statusCode).to.be.equal(418);
+    expect(listener.handlers.calledOnce).to.equal(false);
+    expect(pluginOptions.validate.calledOnce).to.equal(true);
   });
 });
