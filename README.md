@@ -34,6 +34,7 @@ const mock = {
   plugin: hapiMock,
   options: {
     baseDir: Path.join(__dirname, 'mocks'),
+    validate: async (request) => ({ isValid: true }), // optional auth for mocks
   },
 };
 
@@ -56,7 +57,6 @@ server.route({
     plugins: {
       'hapi-mock': { // activate mocking for this endpoint
         file: './cases', // JS module relative to `baseDir`
-        validate: async (request) => ({ isValid: true }), // optional auth for mocks
       },
     },
   },
