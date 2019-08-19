@@ -31,15 +31,15 @@
     "@hapi/hapi": ">=18.x.x"
   },
   "devDependencies": {
-    "@hapi/basic": "^5.1.0",
-    "@hapi/hapi": "^18.3.1",
-    "@hapi/joi": "^15.1.0",
+    "@hapi/basic": "^5.1.1",
+    "@hapi/hapi": "^18.3.2",
+    "@hapi/joi": "^15.1.1",
     "babel-eslint": "^10.0.2",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "coveralls": "^3.0.4",
-    "eslint": "^6.0.1",
-    "eslint-config-airbnb-base": "^13.2.0",
+    "eslint": "^6.2.0",
+    "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-should-promised": "^2.0.0",
@@ -49,7 +49,7 @@
     "sinon-chai": "^3.3.0"
   },
   "dependencies": {
-    "@hapi/boom": "^7.4.2",
+    "@hapi/boom": "^7.4.3",
     "jexl": "^2.1.1"
   }
 }
