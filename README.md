@@ -8,6 +8,8 @@ Hapi plugin for mocking endpoints.
 [![code style](https://img.shields.io/badge/code_style-airbnb-brightgreen.svg)](https://github.com/airbnb/javascript)
 [![License Status](http://img.shields.io/npm/l/hapi-mock.svg)]()
 
+Tested with Node 12/13 and Hapi 19.
+
 ## Install
 
 ```bash

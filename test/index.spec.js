@@ -139,6 +139,7 @@ const setup = async (pluginOptions = {}) => {
       ...pluginOptions,
     },
   };
+  server.validator(Joi);
   await server.register([hapiAuthBasic, mock]);
   server.auth.strategy('simple', 'basic', { validate });
   server.auth.default('simple');
