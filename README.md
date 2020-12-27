@@ -1,6 +1,6 @@
 # hapi-mock
 
-Hapi plugin for mocking endpoints.
+Hapi server plugin for mocking endpoints.
 
 [![Build Status](https://travis-ci.org/frankthelen/hapi-mock.svg?branch=master)](https://travis-ci.org/frankthelen/hapi-mock)
 [![Coverage Status](https://coveralls.io/repos/github/frankthelen/hapi-mock/badge.svg?branch=master)](https://coveralls.io/github/frankthelen/hapi-mock?branch=master)
@@ -8,7 +8,10 @@ Hapi plugin for mocking endpoints.
 [![code style](https://img.shields.io/badge/code_style-airbnb-brightgreen.svg)](https://github.com/airbnb/javascript)
 [![License Status](http://img.shields.io/npm/l/hapi-mock.svg)]()
 
-Tested with Node 12/13 and Hapi 19.
+Tested with
+
+* Hapi 20 on Node 12/14/15
+* Hapi 19 on Node 12/14/15
 
 ## Install
 
