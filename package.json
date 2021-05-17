@@ -2,17 +2,30 @@
   "name": "hapi-mock",
   "version": "1.0.0",
   "description": "A simple HAPI plug-in for mocking endpoints",
-  "main": "src/index.js",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
   "scripts": {
-    "lint": "eslint . --ignore-path ./.eslintignore",
-    "test": "NODE_ENV=test nyc --reporter=lcov --reporter=text-summary mocha --exit --recursive test",
-    "coveralls": "nyc report --reporter=lcovonly && cat ./coverage/lcov.info | coveralls",
-    "preversion": "npm run lint && npm test"
+    "coveralls": "npm run test && cat ./coverage/lcov.info | coveralls",
+    "preversion": "npm run lint && npm test",
+    "build": "npm run build:clear && npm run build:copy && npm run build:ts",
+    "build:clear": "rm -rf ./build",
+    "build:copy": "mkdir -p build/src && cp src/index.d.ts build/src",
+    "build:ts": "tsc",
+    "lint": "npm run lint:ts",
+    "lint:ts": "eslint src/**/*.ts --ignore-path ./.eslintignore",
+    "lint:fix": "eslint src/**/*.ts --ignore-path ./.eslintignore --fix",
+    "test": "jest",
+    "test:all": "npm run lint && npm test",
+    "test:ci": "npm run lint && CI=true npm test",
+    "prepublishOnly": "npm run build && npm run test:all"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/frankthelen/hapi-mock.git"
   },
+  "files": [
+    "build/src/**"
+  ],
   "keywords": [
     "hapi",
     "mock"
@@ -29,27 +42,26 @@
   "peerDependencies": {
     "@hapi/hapi": ">=19.x.x"
   },
-  "devDependencies": {
-    "@hapi/basic": "^6.0.0",
-    "babel-eslint": "^10.1.0",
-    "chai": "^4.2.0",
-    "chai-as-promised": "^7.1.1",
-    "coveralls": "^3.1.0",
-    "eslint": "^7.16.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-should-promised": "^2.0.0",
-    "hapi19": "npm:@hapi/hapi@^19.2.0",
-    "hapi20": "npm:@hapi/hapi@^20.0.3",
-    "joi": "^17.1.0",
-    "mocha": "^8.2.1",
-    "nyc": "^15.1.0",
-    "sinon": "^9.2.2",
-    "sinon-chai": "^3.5.0"
-  },
   "dependencies": {
-    "@hapi/boom": "^9.1.1",
-    "jexl": "^2.3.0"
+    "@hapi/boom": "^9.1.2"
+  },
+  "devDependencies": {
+    "@hapi/hapi": "^20.1.2",
+    "@types/hapi__hapi": "^20.0.8",
+    "@types/jest": "^26.0.23",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^15.3.0",
+    "@typescript-eslint/eslint-plugin": "^4.24.0",
+    "coveralls": "^3.1.0",
+    "eslint": "^7.26.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-airbnb-typescript": "^12.3.1",
+    "eslint-plugin-import": "^2.23.2",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-should-promised": "^2.0.0",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.6",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
   }
 }

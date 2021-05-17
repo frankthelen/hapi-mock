@@ -3,5 +3,6 @@
 # Ignore built files except build/index.js
 coverage/*
 build/*
-builds/*
 bundle.js
+jest.config.ts
+*.d.ts

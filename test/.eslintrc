@@ -1,13 +1,7 @@
 {
   "extends": "../.eslintrc",
   "env": {
-    "mocha": true
-  },
-  "globals" : {
-    "assert": false,
-    "expect": false,
-    "should": false,
-    "sinon": false
+    "jest": true
   },
   "plugins": [
     "should-promised"
