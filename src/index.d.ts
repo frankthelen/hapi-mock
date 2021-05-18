@@ -23,7 +23,7 @@ declare namespace hapiMock {
     */
     headerName?: string;
 
-    /** What should be done if mocks are configured but none is matching.
+    /** What should be done if mocks are configured with an endpoint but none is matching.
      * If `true`, the request is passed on.
      * If `false`, the response is status code 422 "Unprocessable Entity".
      * Default is `true`. */
@@ -34,7 +34,7 @@ declare namespace hapiMock {
     /** List of mock cases for this endpoint. */
     mocks: MockCase[];
 
-    /** What should be done if mocks are configured but none is matching.
+    /** What should be done if mocks are configured with an endpoint but none is matching.
      * If `true`, the request is passed on.
      * If `false`, the response is status code 422 "Unprocessable Entity".
      * Default is the registration option `continueIfNoneMatch`. */

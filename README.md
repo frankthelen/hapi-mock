@@ -19,15 +19,17 @@ npm install hapi-mock
 
 ## Purpose
 
-This plugin provides a simple way to add mock behavior to endpoints.
+This plugin provides a simple way to add mock behavior to Hapi endpoints.
 It is *experimental* at this point of time.
 
 v2 is going away from jexl expressions towards es6 conditions.
-And it is rewritten in TypeScript.
+And it provides TypeScript support.
 
-## Usage (ES6)
+## Usage
 
-Register the plugin with Hapi server like this:
+### ES6
+
+The plugin is *registered with the Hapi server* something like this:
 
 ```js
 const Hapi = require('@hapi/hapi');
@@ -37,18 +39,21 @@ const hapiMock = require('hapi-mock');
 
 const mock = {
   plugin: hapiMock,
-  options: {
-    triggerByHeader: true, // default
-    headerName: 'x-hapi-mock', // default
+  options: { // registration options
+    triggerByHeader: true, // this is the default
+    headerName: 'x-hapi-mock', // this is the default
   },
 };
 
 await server.register(mock);
 ```
 
-Your route configuration may look like this:
+Your *route configuration* might look like this
+(referring to specific mock cases as a separate module):
 
 ```js
+const myMocks = require('./my-mocks'); // separate module
+
 server.route({
   method: 'GET',
   path: '/example/{id}',
@@ -56,18 +61,15 @@ server.route({
     // ...
     plugins: {
       'hapi-mock': { // add mock behavior to this endpoint
-        mocks: [{
-          condition: ({ params }) => params.id === '4711',
-          code: 418,
-        }, ...],
+        mocks: myMocks,
       },
     },
   },
-  handler: // ...
+  // ...
 });
 ```
 
-The `mocks` option can also refer to a separate module, e.g.,
+The file `my-mocks.js` provides some mock cases, e.g.,
 
 ```js
 module.exports = [{
@@ -90,49 +92,71 @@ module.exports = [{
 }];
 ```
 
-`condition` maps the Hapi request object to true for applying the mock case.
-Response parameters of a mock can be `code` (default `200` or `204`),
-`type` (default `text/plain`), `body` (default empty), and `headers` (default `{}`).
+`condition` gets the Hapi request object as an input parameter
+and returns true if the mock case is applicable.
+There are response parameters `code` (default `200` or `204`),
+`type` (default `text/plain`), `body` (default empty), and `headers` (default `{}`)
+to specify the mock behavior. See below for details.
 
-Have fun.
+### TypeScript
+
+Types for TypeScript are provided. A typical mock file looks like this:
+
+```typescript
+import * as hapiMock from 'hapi-mock';
+
+export default [{
+  title: 'case 4711',
+  condition: ({ params }) => params.id === '4711',
+  code: 418,
+  body: '4711',
+}, ...] as hapiMock.MockCase[];
+```
 
 ## Options
 
-### Registration Options
+### Register Options
 
-`triggerByHeader` (optional, boolean, default `true`) -- When to apply mocks (provided that
+In TypeScript it's `hapiMock.RegisterOptions`. Properties are:
+
+* `triggerByHeader` (optional, `boolean`, default is `true`) -- When to apply mocks (provided that
 an endpoint has mocks configured). If `true`, mocks are only applied when the request header
 `x-hapi-mock` is set (any value). If `false` mocks are always applied.
 
-`headerName` (optional, string, default `x-hapi-mock`) -- As request header, it must be set to
+* `headerName` (optional, `string`, default is `x-hapi-mock`) -- As request header, it must be set to
 activate mocks (unless `triggerByHeader` is `false`). As response header, it tells which mock
-case was applied (if any).
+case was actually applied (if any).
 
-`continueIfNoneMatch` (optional, boolean, default `true`) -- What should be done
-if mocks are configured but none is matching.
+* `continueIfNoneMatch` (optional, `boolean`, default is `true`) -- What should be done
+if mocks are configured with an endpoint but none is matching.
 If `true`, the request is passed on.
 If `false`, the response is status code 422 "Unprocessable Entity".
 
 ### Route Options
 
-`mocks` (required, Array) -- List of mock cases for the respective endpoint.
+In TypeScript it's `hapiMock.RouteOptions`. Properties are:
 
-`continueIfNoneMatch` (optional, boolean, default is registration option `continueIfNoneMatch`) --
-What should be done if mocks are configured but none is matching.
+* `mocks` (required, `Array`) -- List of mock cases for the respective endpoint.
+
+* `continueIfNoneMatch` (optional, `boolean`, default is the register option
+`continueIfNoneMatch` above) -- What should be done if mocks are configured
+with an endpoint but none is matching.
 If `true`, the request is passed on.
 If `false`, the response is status code 422 "Unprocessable Entity".
 
 ### Mock Cases
 
-`title` (required, string) -- A descriptive title of the mock case.
+In TypeScript it's `hapiMock.MockCase`. Properties are:
 
-`condition` (required, function `(request: Hapi.Request) => boolean`) --
-The condition when the mock case shall be applied.
+* `title` (required, `string`) -- A descriptive title of the mock case.
 
-`code` (optional, number, default 200 or 204) -- Status code.
+* `condition` (required, a function `(request: Hapi.Request) => boolean`) --
+The condition when the mock case applies.
 
-`type` (optional, string, default `text/plain`) -- Response `content-type`.
+* `code` (optional, `number`, default is 200 or 204) -- The response's status code.
 
-`body` (optional, string or object) -- Response body.
+* `type` (optional, `string`, default is `text/plain`) -- The response's `content-type`.
 
-`headers` (optional, object) -- Response headers.
+* `body` (optional, `string` or any object) -- The response's body.
+
+* `headers` (optional, an object) -- The response's specific headers.
